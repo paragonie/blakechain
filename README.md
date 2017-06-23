@@ -11,6 +11,7 @@ Includes:
 
 * The `Blakechain` implementation, which chains together `Node` objects
 * A runtime `Verifier` class that validates the self-consistency of an entire chain
+  (or a subset of an entire chain)
 
 Blakechain is not a blockchain. You probably [don't need a blockchain](https://tonyarcieri.com/on-the-dangers-of-a-blockchain-monoculture).
 
