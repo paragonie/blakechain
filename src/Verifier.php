@@ -14,6 +14,9 @@ class Verifier
     const HASH_DOES_NOT_MATCH = 'The hash for this item does not match its contents';
     const PREV_DOES_NOT_MATCH = 'The previous hash for this item does not match the previous hash';
 
+    /**
+     * @var array
+     */
     protected $lastErrorData = [];
 
     /**
