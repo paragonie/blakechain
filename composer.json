@@ -1,0 +1,26 @@
+{
+  "name": "paragonie/blakechain",
+  "description": "Hash chain using BLAKE2b",
+  "type": "library",
+  "require": {
+    "php": "^7",
+    "paragonie/constant_time_encoding": "^2",
+    "paragonie/sodium_compat": "^1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6",
+    "vimeo/psalm": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "ParagonIE\\Blakechain\\": "src"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Paragon Initiative Enterprises",
+      "email": "info@paragonie.com"
+    }
+  ]
+}
