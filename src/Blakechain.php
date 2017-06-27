@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace ParagonIE\Blakechain;
+use ParagonIE\ConstantTime\Base64UrlSafe;
 
 /**
  * Class Blakechain
@@ -9,6 +10,16 @@ namespace ParagonIE\Blakechain;
 class Blakechain
 {
     const HASH_SIZE = 32;
+
+    /**
+     * @var string
+     */
+    protected $firstPrevHash = '';
+
+    /**
+     * @var string
+     */
+    protected $summaryHashState = '';
 
     /**
      * @var array<int, Node>
@@ -22,19 +33,34 @@ class Blakechain
      */
     public function __construct(Node ...$nodes)
     {
-        $num = \count($nodes);
-        if ($num < 1) {
-            throw new \Error('Nodes expected.');
-        }
-        $prevHash = '';
-        for ($i = 0; $i < $num; ++$i) {
-            $thisNodesPrev = $nodes[$i]->getPrevHash();
-            if (empty($thisNodesPrev)) {
-                $nodes[$i]->setPrevHash($prevHash);
-            }
-            $prevHash = $nodes[$i]->getHash(true);
-        }
+        $this->firstPrevHash = '';
+        $this->summaryHashState = '';
         $this->nodes = $nodes;
+        $this->recalculate();
+    }
+
+    /**
+     * Append a new Node.
+     *
+     * @param string $data
+     * @return self
+     */
+    public function appendData(string $data): self
+    {
+        if (empty($this->nodes)) {
+            $prevHash = $this->firstPrevHash;
+        } else {
+            $last = $this->getLastNode();
+            $prevHash = $last->getHash(true);
+        }
+        $newNode = new Node($data, $prevHash);
+        $this->nodes[] = $newNode;
+
+        \ParagonIE_Sodium_Compat::crypto_generichash_update(
+            $this->summaryHashState,
+            $newNode->getHash(true)
+        );
+        return $this;
     }
 
     /**
@@ -47,17 +73,14 @@ class Blakechain
     }
 
     /**
-     * Append a new Node.
-     *
-     * @param string $data
-     * @return self
+     * @return Node
+     * @throws \Error
      */
-    public function appendData(string $data): self
+    public function getLastNode(): Node
     {
-        $last = $this->getLastNode();
-        $prevHash = $last->getHash(true);
-        $this->nodes[] = new Node($data, $prevHash);
-        return $this;
+        $keys = \array_keys($this->nodes);
+        $last = \array_pop($keys);
+        return $this->nodes[$last];
     }
 
     /**
@@ -66,6 +89,45 @@ class Blakechain
     public function getNodes(): array
     {
         return \array_values($this->nodes);
+    }
+
+    /**
+     * Get the summary hash
+     *
+     * @param bool $rawBinary
+     * @return string
+     */
+    public function getSummaryHash(bool $rawBinary = false): string
+    {
+        /* Make a XOR-encrypted copy of the hash state to prevent PHP's
+         * interned strings from overwriting the hash state and causing
+         * corruption. */
+        $len = \ParagonIE_Sodium_Core_Util::strlen($this->summaryHashState);
+        $pattern = \random_bytes($len);
+        $tmp = $pattern ^ $this->summaryHashState;
+
+        $finalHash = \ParagonIE_Sodium_Compat::crypto_generichash_final($this->summaryHashState);
+
+        /* Restore hash state */
+        $this->summaryHashState = $tmp ^ $pattern;
+        if ($rawBinary) {
+            return $finalHash;
+        }
+        return Base64UrlSafe::encode($finalHash);
+    }
+
+    /**
+     * Get a string representing the internals of a crypto_generichash state.
+     *
+     * @param bool $rawBinary
+     * @return string
+     */
+    public function getSummaryHashState(bool $rawBinary = false): string
+    {
+        if ($rawBinary) {
+            return '' . $this->summaryHashState;
+        }
+        return Base64UrlSafe::encode($this->summaryHashState);
     }
 
     /**
@@ -89,15 +151,48 @@ class Blakechain
     }
 
     /**
-     * @return Node
+     * Recalculate the summary hash and summary hash.
+     * @return self
      */
-    public function getLastNode(): Node
+    public function recalculate(): self
     {
-        if (empty($this->nodes)) {
-            throw new \Error('Blakechain has no nodes');
+        $num = \count($this->nodes);
+        $this->summaryHashState = \ParagonIE_Sodium_Compat::crypto_generichash_init();
+        $prevHash = $this->firstPrevHash;
+        for ($i = 0; $i < $num; ++$i) {
+            $thisNodesPrev = $this->nodes[$i]->getPrevHash();
+            if (empty($thisNodesPrev)) {
+                $this->nodes[$i]->setPrevHash($prevHash);
+            }
+            $prevHash = $this->nodes[$i]->getHash(true);
+            \ParagonIE_Sodium_Compat::crypto_generichash_update(
+                $this->summaryHashState,
+                $prevHash
+            );
         }
-        $keys = \array_keys($this->nodes);
-        $last = \array_pop($keys);
-        return $this->nodes[$last];
+        return $this;
+    }
+
+    /**
+     * @param string $first
+     * @return self
+     */
+    public function setFirstPrevHash(string $first = ''): self
+    {
+        $this->firstPrevHash = $first;
+        return $this->recalculate();
+    }
+
+    /**
+     * @param string $hashState
+     * @return self
+     */
+    public function setSummaryHashState(string $hashState): self
+    {
+        if (\ParagonIE_Sodium_Core_Util::strlen($hashState) !== 361) {
+            throw new \RangeException('Expected exactly 361 bytes');
+        }
+        $this->summaryHashState = $hashState;
+        return $this;
     }
 }
