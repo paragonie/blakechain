@@ -15,6 +15,8 @@ Includes:
 
 Blakechain is not a blockchain. You probably [don't need a blockchain](https://tonyarcieri.com/on-the-dangers-of-a-blockchain-monoculture).
 
+Blakechain provides the data structure used in [Chronicle](https://github.com/paragonie/chronicle).
+
 ### How Blakechain Works
 
 The hash of each message is a keyed BLAKE2b hash, where the key of this message
