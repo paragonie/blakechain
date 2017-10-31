@@ -189,8 +189,9 @@ class Blakechain
      */
     public function setSummaryHashState(string $hashState): self
     {
-        if (\ParagonIE_Sodium_Core_Util::strlen($hashState) !== 361) {
-            throw new \RangeException('Expected exactly 361 bytes');
+        $len = \ParagonIE_Sodium_Core_Util::strlen($hashState);
+        if ($len !== 384 && $len !== 361) {
+            throw new \RangeException('Expected exactly 361 or 384 bytes, ' . $len . ' given.');
         }
         $this->summaryHashState = $hashState;
         return $this;
