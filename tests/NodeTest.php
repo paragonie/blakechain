@@ -4,6 +4,10 @@ namespace ParagonIE\Blakechain\UnitTests;
 use ParagonIE\Blakechain\Node;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class NodeTest
+ * @package ParagonIE\Blakechain\UnitTests
+ */
 class NodeTest extends TestCase
 {
     public function testNode()

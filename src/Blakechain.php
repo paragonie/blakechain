@@ -24,7 +24,7 @@ class Blakechain
     /**
      * @var array<int, Node>
      */
-    protected $nodes;
+    protected $nodes = [];
 
     /**
      * Blakechain constructor.

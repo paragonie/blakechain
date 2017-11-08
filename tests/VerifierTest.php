@@ -8,6 +8,10 @@ use ParagonIE\Blakechain\{
 };
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class VerifierTest
+ * @package ParagonIE\Blakechain\UnitTests
+ */
 class VerifierTest extends TestCase
 {
     /**

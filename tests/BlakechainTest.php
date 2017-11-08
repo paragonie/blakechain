@@ -1,11 +1,17 @@
 <?php
 namespace ParagonIE\Blakechain\UnitTests;
 
-use ParagonIE\Blakechain\Blakechain;
-use ParagonIE\Blakechain\Node;
+use ParagonIE\Blakechain\{
+    Blakechain,
+    Node
+};
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class BlakechainTest
+ * @package ParagonIE\Blakechain\UnitTests
+ */
 class BlakechainTest extends TestCase
 {
     public function testBlockchain()

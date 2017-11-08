@@ -13,17 +13,17 @@ class Node
     /**
      * @var string
      */
-    protected $prevHash;
+    protected $prevHash = '';
 
     /**
      * @var string
      */
-    protected $data;
+    protected $data = '';
 
     /**
      * @var string
      */
-    protected $hash;
+    protected $hash = '';
 
     /**
      * Node constructor.
