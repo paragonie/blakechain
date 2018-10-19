@@ -9,7 +9,8 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
  */
 class Blakechain
 {
-    const HASH_SIZE = 32;
+    // Maximum is 64 byte // 512 bit
+    const HASH_SIZE = 32; // 256 bit
 
     /**
      * @var string
@@ -151,7 +152,7 @@ class Blakechain
     }
 
     /**
-     * Recalculate the summary hash and summary hash.
+     * Recalculate the summary hash state.
      * @return self
      */
     public function recalculate(): self
