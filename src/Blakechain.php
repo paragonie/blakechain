@@ -152,7 +152,7 @@ class Blakechain
     }
 
     /**
-     * Recalculate the summary hash state.
+     * Recalculate the summary hash and summary hash state.
      * @return self
      */
     public function recalculate(): self
