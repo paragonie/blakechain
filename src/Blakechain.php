@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 namespace ParagonIE\Blakechain;
+
+use ParagonIE_Sodium_Compat as SodiumCompat;
+use ParagonIE_Sodium_Core_Util as Util;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 
 /**
@@ -12,25 +15,22 @@ class Blakechain
     // Maximum is 64 byte // 512 bit
     const HASH_SIZE = 32; // 256 bit
 
-    /**
-     * @var string
-     */
+    /** @var string $firstPrevHash */
     protected $firstPrevHash = '';
 
-    /**
-     * @var string
-     */
+    /** @var string $summaryHashState */
     protected $summaryHashState = '';
 
-    /**
-     * @var array<int, Node>
-     */
+    /** @var array<int, Node> */
     protected $nodes = [];
 
     /**
      * Blakechain constructor.
-     * @param array<int, Node> $nodes
+     *
+     * @param Node ...$nodes
+     *
      * @throws \Error
+     * @throws \SodiumException
      */
     public function __construct(Node ...$nodes)
     {
@@ -45,6 +45,8 @@ class Blakechain
      *
      * @param string $data
      * @return self
+     *
+     * @throws \SodiumException
      */
     public function appendData(string $data): self
     {
@@ -57,7 +59,7 @@ class Blakechain
         $newNode = new Node($data, $prevHash);
         $this->nodes[] = $newNode;
 
-        \ParagonIE_Sodium_Compat::crypto_generichash_update(
+        SodiumCompat::crypto_generichash_update(
             $this->summaryHashState,
             $newNode->getHash(true)
         );
@@ -67,6 +69,8 @@ class Blakechain
     /**
      * @param bool $rawBinary
      * @return string
+     *
+     * @throws \SodiumException
      */
     public function getLastHash(bool $rawBinary = false): string
     {
@@ -97,17 +101,19 @@ class Blakechain
      *
      * @param bool $rawBinary
      * @return string
+     *
+     * @throws \Exception
      */
     public function getSummaryHash(bool $rawBinary = false): string
     {
         /* Make a XOR-encrypted copy of the hash state to prevent PHP's
          * interned strings from overwriting the hash state and causing
          * corruption. */
-        $len = \ParagonIE_Sodium_Core_Util::strlen($this->summaryHashState);
+        $len = Util::strlen($this->summaryHashState);
         $pattern = \random_bytes($len);
         $tmp = $pattern ^ $this->summaryHashState;
 
-        $finalHash = \ParagonIE_Sodium_Compat::crypto_generichash_final($this->summaryHashState);
+        $finalHash = SodiumCompat::crypto_generichash_final($this->summaryHashState);
 
         /* Restore hash state */
         $this->summaryHashState = $tmp ^ $pattern;
@@ -135,6 +141,8 @@ class Blakechain
      * @param int $offset
      * @param int $limit
      * @return array
+     *
+     * @throws \SodiumException
      */
     public function getPartialChain(int $offset = 0, int $limit = PHP_INT_MAX): array
     {
@@ -154,11 +162,13 @@ class Blakechain
     /**
      * Recalculate the summary hash and summary hash state.
      * @return self
+     *
+     * @throws \SodiumException
      */
     public function recalculate(): self
     {
         $num = \count($this->nodes);
-        $this->summaryHashState = \ParagonIE_Sodium_Compat::crypto_generichash_init();
+        $this->summaryHashState = SodiumCompat::crypto_generichash_init();
         $prevHash = $this->firstPrevHash;
         for ($i = 0; $i < $num; ++$i) {
             $thisNodesPrev = $this->nodes[$i]->getPrevHash();
@@ -166,7 +176,7 @@ class Blakechain
                 $this->nodes[$i]->setPrevHash($prevHash);
             }
             $prevHash = $this->nodes[$i]->getHash(true);
-            \ParagonIE_Sodium_Compat::crypto_generichash_update(
+            SodiumCompat::crypto_generichash_update(
                 $this->summaryHashState,
                 $prevHash
             );
@@ -177,6 +187,8 @@ class Blakechain
     /**
      * @param string $first
      * @return self
+     *
+     * @throws \SodiumException
      */
     public function setFirstPrevHash(string $first = ''): self
     {
@@ -187,12 +199,16 @@ class Blakechain
     /**
      * @param string $hashState
      * @return self
+     *
+     * @throws \RangeException
      */
     public function setSummaryHashState(string $hashState): self
     {
-        $len = \ParagonIE_Sodium_Core_Util::strlen($hashState);
+        $len = Util::strlen($hashState);
         if ($len !== 384 && $len !== 361) {
-            throw new \RangeException('Expected exactly 361 or 384 bytes, ' . $len . ' given.');
+            throw new \RangeException(
+                'Expected exactly 361 or 384 bytes, ' . $len . ' given.'
+            );
         }
         $this->summaryHashState = $hashState;
         return $this;

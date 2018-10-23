@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace ParagonIE\Blakechain;
 
+use ParagonIE_Sodium_Compat as SodiumCompat;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 
 /**
@@ -52,11 +53,13 @@ class Node
     /**
      * @param bool $rawBinary
      * @return string
+     *
+     * @throws \SodiumException
      */
     public function getHash(bool $rawBinary = false): string
     {
         if (empty($this->hash)) {
-            $this->hash = \ParagonIE_Sodium_Compat::crypto_generichash(
+            $this->hash = SodiumCompat::crypto_generichash(
                 $this->data,
                 $this->prevHash,
                 Blakechain::HASH_SIZE

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace ParagonIE\Blakechain;
 
+use ParagonIE_Sodium_Compat as SodiumCompat;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 
 /**
@@ -34,13 +35,15 @@ class Verifier
      * @param Blakechain $chain
      * @param string $lastHash
      * @return bool
+     *
+     * @throws \SodiumException
      */
     public function verifyLastHash(
         Blakechain $chain,
         string $lastHash
     ): bool {
         /**
-         * @var array<int, Node>
+         * @var array<int, Node> $nodes
          */
         $nodes = $chain->getNodes();
         $count = \count($nodes);
@@ -49,7 +52,7 @@ class Verifier
         for ($i = 0; $i < $count; ++$i) {
             /** @var Node $curr */
             $curr = $nodes[$i];
-            $actualHash = \ParagonIE_Sodium_Compat::crypto_generichash(
+            $actualHash = SodiumCompat::crypto_generichash(
                 $curr->getData(),
                 $prevHash
             );
@@ -87,6 +90,8 @@ class Verifier
      * @param int $offset
      * @param int $limit
      * @return bool
+     *
+     * @throws \SodiumException
      */
     public function verifySequenceHashes(
         Blakechain $chain,
@@ -95,10 +100,17 @@ class Verifier
     ): bool {
         $subchain = $chain->getPartialChain($offset, $limit);
 
+        /** @var string $prev */
+        $prev = '';
+
+        /**
+         * @var int $idx
+         * @var array<string, string> $item
+         */
         foreach ($subchain as $idx => $item) {
             $prevHash = Base64UrlSafe::decode($item['prev']);
             $storedHash = Base64UrlSafe::decode($item['hash']);
-            $actualHash = \ParagonIE_Sodium_Compat::crypto_generichash(
+            $actualHash = SodiumCompat::crypto_generichash(
                 $item['data'],
                 $prevHash
             );
@@ -110,7 +122,7 @@ class Verifier
                 ];
                 return false;
             }
-            if (isset($prev)) {
+            if (!empty($prev)) {
                 if (!\hash_equals($prev, $item['prev'])) {
                     $this->lastErrorData = [
                         'index' => $idx,
@@ -121,6 +133,7 @@ class Verifier
                     return false;
                 }
             }
+            /** @var string $prev */
             $prev = $item['hash'];
         }
         return true;
