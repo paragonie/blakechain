@@ -14,6 +14,9 @@ use PHPUnit\Framework\TestCase;
  */
 class BlakechainTest extends TestCase
 {
+    /**
+     * @throws \Exception
+     */
     public function testBlockchain()
     {
         $chainA = new Blakechain(
@@ -59,7 +62,10 @@ class BlakechainTest extends TestCase
     }
 
     /**
-     * This verifies that you can start at any arbitrary node in the chain and continue to be verified going forward.
+     * This verifies that you can start at any arbitrary node in the chain and
+     * continue to be verified going forward.
+     *
+     * @throws \Exception
      */
     public function testChaining()
     {
@@ -102,6 +108,10 @@ class BlakechainTest extends TestCase
         }
     }
 
+    /**
+     * @throws \SodiumException
+     * @throws \Exception
+     */
     public function testSummaryHashUpdate()
     {
         $chain = new Blakechain(
@@ -132,6 +142,8 @@ class BlakechainTest extends TestCase
     /**
      * Verify that we get the same summary hash piecewise as we
      * do in one fell swoop.
+     *
+     * @throws \Exception
      */
     public function testSummaryHash()
     {
@@ -186,17 +198,15 @@ class BlakechainTest extends TestCase
 
         $this->assertSame(
             $chainA->getSummaryHash(),
+            $chainB->getSummaryHash()
+        );
+        $this->assertSame(
+            $chainB->getSummaryHash(),
             $chainC->getSummaryHash()
         );
-
         $this->assertSame(
-            $chainA->getSummaryHashState(), $chainB->getSummaryHashState()
-        );
-        $this->assertSame(
-            $chainB->getSummaryHashState(), $chainC->getSummaryHashState()
-        );
-        $this->assertSame(
-            $chainA->getSummaryHashState(), $chainC->getSummaryHashState()
+            $chainA->getSummaryHash(),
+            $chainC->getSummaryHash()
         );
 
         $chainA->appendData('');
