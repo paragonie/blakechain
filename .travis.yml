@@ -7,8 +7,12 @@ matrix:
     - php: "7.0"
     - php: "7.1"
     - php: "7.2"
+    - php: "7.3"
+    - php: "7.4"
+    - php: "8.0"
     - php: "nightly"
   allow_failures:
+    - php: "8.0"
     - php: "nightly"
 
 install:
@@ -17,5 +21,4 @@ install:
 
 script:
     - vendor/bin/phpunit --bootstrap=phpunit-autoload.php
-    - php -dmbstring.func_overload=7 vendor/bin/phpunit --bootstrap=phpunit-autoload.php
     - vendor/bin/psalm
