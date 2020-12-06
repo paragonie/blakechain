@@ -15,8 +15,11 @@ matrix:
     - php: "8.0"
     - php: "nightly"
 
+# Use Composer v1 on older PHP to side-step dependency issues with Composer 2:
+before_install:
+  - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then `composer self-update --1`; fi
+
 install:
-    - composer self-update
     - composer update
 
 script:
