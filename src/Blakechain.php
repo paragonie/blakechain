@@ -109,6 +109,7 @@ class Blakechain
         /* Make a XOR-encrypted copy of the hash state to prevent PHP's
          * interned strings from overwriting the hash state and causing
          * corruption. */
+        /** @psalm-suppress InternalMethod */
         $len = Util::strlen($this->summaryHashState);
         $pattern = \random_bytes($len);
         $tmp = $pattern ^ $this->summaryHashState;
@@ -204,6 +205,7 @@ class Blakechain
      */
     public function setSummaryHashState(string $hashState): self
     {
+        /** @psalm-suppress InternalMethod */
         $len = Util::strlen($hashState);
         if ($len !== 384 && $len !== 361) {
             throw new \RangeException(
