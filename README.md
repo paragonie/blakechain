@@ -1,9 +1,11 @@
 # Blakechain
 
-[![Build Status](https://travis-ci.org/paragonie/blakechain.svg?branch=master)](https://travis-ci.org/paragonie/blakechain)
+[![Build Status](https://github.com/paragonie/blakechain/actions/workflows/ci.yml/badge.svg)](https://github.com/paragonie/blakechain/actions)
+[![Static Analysis](https://github.com/paragonie/blakechain/actions/workflows/psalm.yml/badge.svg)](https://github.com/paragonie/blakechain/actions)
 [![Latest Stable Version](https://poser.pugx.org/paragonie/blakechain/v/stable)](https://packagist.org/packages/paragonie/blakechain)
 [![Latest Unstable Version](https://poser.pugx.org/paragonie/blakechain/v/unstable)](https://packagist.org/packages/paragonie/blakechain)
 [![License](https://poser.pugx.org/paragonie/blakechain/license)](https://packagist.org/packages/paragonie/blakechain)
+[![Downloads](https://img.shields.io/packagist/dt/paragonie/blakechain.svg)](https://packagist.org/packages/paragonie/blakechain)
 
 Blakechain is a simple hash-chain data structure based on the BLAKE2b hash function.
 
