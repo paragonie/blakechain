@@ -110,6 +110,7 @@ class Blakechain
          * interned strings from overwriting the hash state and causing
          * corruption. */
         /** @psalm-suppress InternalMethod */
+        /** @var positive-int $len */
         $len = Util::strlen($this->summaryHashState);
         $pattern = \random_bytes($len);
         $tmp = $pattern ^ $this->summaryHashState;
